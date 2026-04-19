@@ -1,0 +1,11 @@
+# Ignore everything by default.
+/*
+
+# Keep this file itself.
+!/.gitignore
+
+# Only publish the dist/agent-handoff folder.
+!/dist/
+/dist/*
+!/dist/agent-handoff/
+!/dist/agent-handoff/**

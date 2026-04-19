@@ -1,0 +1,46 @@
+type: object
+required:
+  - session
+  - current_status
+  - tasks_to_add
+  - tasks_to_update
+  - tasks_to_complete
+  - tasks_to_add_and_complete
+  - decisions_to_add
+  - session_log
+  - resume_hint
+properties:
+  session:
+    type: object
+    required: [started_at, ended_at, focus]
+  current_status:
+    type: object
+    required: [phase, goal, summary, next_step, blockers]
+  tasks_to_add:
+    type: array
+  tasks_to_update:
+    type: array
+  tasks_to_complete:
+    type: array
+  tasks_to_add_and_complete:
+    type: array
+    items:
+      type: object
+      required: [title, details, priority, notes]
+      properties:
+        title:
+          type: string
+        details:
+          type: string
+        priority:
+          type: string
+        notes:
+          type: string
+  decisions_to_add:
+    type: array
+  session_log:
+    type: object
+    required: [progress, files_touched, risks]
+  resume_hint:
+    type: object
+    required: [text]

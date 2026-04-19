@@ -1,0 +1,46 @@
+{
+  "skill_name": "agent-handoff",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个仓库还没初始化交接。请初始化项目交接，并确保以后恢复工作时会先看 .agent-handoff/START-HERE.md。",
+      "expected_output": "Creates .agent-handoff, inserts the managed AGENTS.md block, and leaves generated files in a valid state.",
+      "files": [],
+      "expectations": [
+        "The repository contains .agent-handoff/_state/project.yaml",
+        "AGENTS.md contains the managed AGENT-HANDOFF block"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "读取交接状态并继续工作。先告诉我当前目标、已经完成到哪一步、下一步做什么。",
+      "expected_output": "Reads generated views through resume flow and returns a stable summary with goal, progress, next step, and blockers.",
+      "files": [],
+      "expectations": [
+        "The workflow uses the resume command",
+        "The summary includes phase, goal, summary, and next_step"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "更新交接状态并收尾。这次完成了 init 和 resume，下一步是补 close-session。请更新任务、决定和会话记录。",
+      "expected_output": "Writes a close-session update request, moves completed tasks correctly, updates current state, and validates the repository.",
+      "files": [],
+      "expectations": [
+        "A completed task is moved out of the active task list",
+        "validate returns no problems after close-session"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "更新交接状态并收尾。这次把收尾更新单改到 .agent-handoff/_tmp，并且把待办边界规则定下来了，当场就已经做完。请按新规则收尾。",
+      "expected_output": "Writes the close-session update request into .agent-handoff/_tmp/, records the boundary change as completed work, and validates the repository.",
+      "files": [],
+      "expectations": [
+        "The workflow uses .agent-handoff/_tmp/ for the update request",
+        "The same-session boundary change is recorded as completed work",
+        "validate returns no problems after close-session"
+      ]
+    }
+  ]
+}
