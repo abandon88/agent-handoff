@@ -3,6 +3,7 @@
 
 # Keep this file itself.
 !/.gitignore
+!/README.md
 
 # Only publish the dist/agent-handoff folder.
 !/dist/
