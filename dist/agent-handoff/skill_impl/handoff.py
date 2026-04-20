@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -52,6 +53,16 @@ HANDOFF_RULES = """# 交接规则
 TMP_DIR_NAME = "_tmp"
 CLOSE_SESSION_PREFIX = "close-session-"
 TMP_REQUEST_KEEP_LIMIT = 10
+MODULE_SKILL_ROOT = Path(__file__).resolve().parents[1]
+RUNTIME_ROOT_PARTS = (".agent-handoff", "runtime", "agent-handoff")
+RUNTIME_REQUIRED_FILES = (
+    "requirements.txt",
+    "RUNTIME-INFO.json",
+    "scripts/handoff.py",
+    "skill_impl/__init__.py",
+    "skill_impl/handoff.py",
+    "schemas/update-request.schema.yaml",
+)
 
 
 def _now_pair() -> tuple[str, str]:
@@ -82,6 +93,15 @@ def _handoff_dir(root: Path) -> Path:
     return Path(root) / ".agent-handoff"
 
 
+def _runtime_root(root: Path) -> Path:
+    return Path(root).joinpath(*RUNTIME_ROOT_PARTS)
+
+
+def _runtime_required_paths(root: Path) -> list[Path]:
+    runtime_root = _runtime_root(root)
+    return [runtime_root / relative for relative in RUNTIME_REQUIRED_FILES]
+
+
 def _tmp_dir(root: Path) -> Path:
     tmp_dir = _handoff_dir(root) / TMP_DIR_NAME
     tmp_dir.mkdir(parents=True, exist_ok=True)
@@ -110,6 +130,23 @@ def _sync_static_handoff_files(root: Path) -> None:
     _tmp_dir(root)
     (handoff_dir / "START-HERE.md").write_text(START_HERE, encoding="utf-8")
     (handoff_dir / "HANDOFF-RULES.md").write_text(HANDOFF_RULES, encoding="utf-8")
+
+
+def sync_runtime_copy(root: Path, source_skill_root: Path | None = None) -> Path:
+    root = Path(root)
+    source_root = Path(source_skill_root) if source_skill_root else MODULE_SKILL_ROOT
+    runtime_root = _runtime_root(root)
+    runtime_root.mkdir(parents=True, exist_ok=True)
+
+    for relative in RUNTIME_REQUIRED_FILES:
+        source = source_root / relative
+        target = runtime_root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if source.resolve() == target.resolve():
+            continue
+        shutil.copy2(source, target)
+
+    return runtime_root
 
 
 def init_repository(root: Path) -> None:
@@ -171,6 +208,7 @@ def init_repository(root: Path) -> None:
     )
 
     _ensure_agents_block(root / "AGENTS.md")
+    sync_runtime_copy(root)
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
@@ -541,6 +579,10 @@ def validate_repository(root: Path) -> list[str]:
     for path in required_files:
         if not path.exists():
             problems.append(f"missing file: {path}")
+
+    for path in _runtime_required_paths(root):
+        if not path.exists():
+            problems.append(f"missing runtime file: {path}")
 
     _, tasks, _, _ = _load_truth(root)
     ids = [item["task_id"] for item in tasks.get("active", []) + tasks.get("completed", [])]

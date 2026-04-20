@@ -1,0 +1,14 @@
+{
+  "minimum_python": "3.8",
+  "runtime_root": ".agent-handoff/runtime/agent-handoff",
+  "entry_script": "scripts/handoff.py",
+  "dependencies": ["PyYAML==6.0.2"],
+  "required_files": [
+    "requirements.txt",
+    "RUNTIME-INFO.json",
+    "scripts/handoff.py",
+    "skill_impl/__init__.py",
+    "skill_impl/handoff.py",
+    "schemas/update-request.schema.yaml"
+  ]
+}
