@@ -1,149 +1,145 @@
-# agent-handoff
+agent-handoff
+=============
 
-> **AI 会失忆，仓库不会。**
-> 
-> 把项目交接状态留在仓库里，让 Codex 或 Claude Code 在换电脑、换线程、隔一天之后，还是知道怎么继续干活。
-> 
-> **AI forgets. Your repo doesn't.**
-> 
-> Keep your project handoff state in the repo, so Codex or Claude Code can continue across machines, threads, and time.
+> 让 AI 的短期记忆，变成项目的长期资产。
 
-好记性不如烂笔头。放到 AI 协作里也是一样：别赌模型记性，把交接写进仓库。
+* * *
 
----
+**agent-handoff** 是一个专为 AI 编程助手设计的「跨设备工作交接」技能。  
+它会将当前工作状态保存在项目仓库的 `.agent-handoff/` 目录里，**你只需要正常 `git push` / `git pull`**，换一台电脑打开项目，说一句「继续工作」，AI 就能无缝接上之前的进度。
 
-## 你到底怎么用
+不再重复解释上下文，不再追问「我们上次做到哪了」，也不再让 AI 靠感觉在 Markdown 里胡乱涂鸦。
 
-这东西的主用法，其实很简单。
+* * *
 
-把这个仓库链接发给 Codex 或 Claude Code，让它安装 `agent-handoff`。  
-然后用 `/+` 选中这个 skill。  
-接下来，直接像跟同事说话一样开口就行。
+🔥为什么你需要这个
+---------
 
-你最常用的就是这四句：
+* 你在公司和家里的两台电脑上来回切换，每次打开项目 AI 都像失忆了一样。
 
-- `初始化项目交接`
-- `读取交接状态并继续工作`
-- `更新交接状态并收尾`
-- `查看当前交接状态`
+* 你受够了让 AI 「总结一下当前进度」之后，它写出一份格式飘忽、时间写「刚刚」的流水账。
 
-先把 skill 装上，然后直接说人话。
+* 你发现让 AI 直接编辑交接文件，过两周任务编号就打架，已完成和待办混在一起，根本没法看。
 
----
+* 你想让交接状态跟着代码一起版本管理，但又不想让 `.agent-handoff/` 变成另一个没人敢动的玄学目录。
 
-## 它解决什么问题
+**agent-handoff** 把「交接」这件事工程化了：
 
-你可能已经把代码同步好了。
+* **模型只管说人话**（我想完成什么、为什么这么做）
 
-真正总在掉的，是这些东西：
+* **脚本负责干脏活**（编号、时间戳、去重、排序、校验、生成展示文件）
 
-- 昨天做到哪了
-- 为什么这么改
-- 哪些决定已经定了
-- 下一步最该接什么
+* **仓库是同步媒介**（`.agent-handoff/` 随代码一起推上 GitHub，拉下来就能用）
 
-换一台电脑，AI 不记得了。  
-新开一个线程，背景又像从零开始。  
-明明昨天聊得很完整，今天还是得重讲一遍。
+* * *
 
-`agent-handoff` 就是专门补这条断线的。
+🧠 它是怎么做到的
+----------
 
----
+一句话解释：**模型写「更新单」，脚本落盘并生成给人看的文件。**
 
-## 它到底是什么
+text
 
-`agent-handoff` 是一个把项目交接状态写进仓库里的 skill。
+你: "更新交接状态并收尾"
+      ↓
+   AI 生成 update-request.yaml（纯语义，不带编号和时间）
+      ↓
+   脚本校验 → 更新 _state/ 真源 → 重新生成 CURRENT.md / TASKS.md 等展示层
+      ↓
+   Git commit & push → 另一台电脑 pull → "读取交接状态并继续工作" → 完美续上
 
-它不是聊天记录导出器，也不是假装“模型会永久记住一切”的幻想工具。它做的是更实在的事：
+因为真源是结构化的 YAML/JSONL，所以永远不会出现编号冲突、格式漂移、手工误改导致状态损坏的问题。
 
-- 在仓库里建立固定的交接入口
-- 把当前目标、待办、决定和最近进展留在仓库里
-- 让下一次恢复工作时，有一条稳定的入口可接
-- 用规则、校验和重建，尽量避免交接状态越用越乱
+* * *
 
-真正发布的 skill 内容在 [`dist/agent-handoff`](dist/agent-handoff)。
+🧪 一些很酷的细节
+----------
 
----
+### 🧹 中转文件不污染根目录
 
-## 为什么它顺手
+收尾时 AI 生成的更新单会先丢进 `.agent-handoff/_tmp/`，脚本应用成功后自动保留最近 10 份用于调试，超出的自动清理。 不会再看到项目根目录突然冒出 `tmp/close-session-20260421-143022.json`。
 
-**不用先背命令**
+### 📋 待办不会变成流水账
 
-装上 skill 以后，主用法就是自然语言触发，不是先去记一套脚本参数。
+内置规则只把两类事情记成正式待办：
 
-**状态跟着仓库走**
+1. 明显会跨会话延续的事项。
 
-代码在仓库里，交接状态也在仓库里，不再散落在某个临时聊天窗口里。
+2. 改变了规则、结构、流程边界的重要动作（即使当场做完）。
 
-**换设备也能接上**
+零碎的「看一眼文件」「顺手跑个测试」只写进会话日志，不会污染任务列表。
 
-你换电脑、换线程、隔一天再回来，至少还有一个明确入口，而不是全靠回忆。
+### 🌍 跨设备即开即用
 
-**长期用也不容易乱**
+换一台新电脑，哪怕 Python 版本低了点、依赖没装，skill 自带的启动器会检测环境并给出明确提示，还会自动把运行脚本复制到仓库内的 `.agent-handoff/runtime/` 里，不再每次触发都弹授权确认。
 
-它不是随便写几段 Markdown 就完事了，背后有校验和重建逻辑，坏了还能拉回来。
+### 🔒 展示层坏了也不怕
 
----
+如果 AI 或者某个脚本把展示的 Markdown 搞乱了，一句 `重建交接展示文件` 就能从 `_state/` 真源完整重生。
 
-## 一个最常见的使用方式
+*** 
 
-1. 把这个仓库链接发给 Codex 或 Claude Code
-2. 让它安装 `agent-handoff`
-3. 用 `/+` 选中这个 skill
-4. 直接说你现在要做哪一类事
+📦 快速开始
+-------
 
-例如：
+### 安装
 
-- “初始化项目交接”
-- “读取交接状态并继续工作”
-- “更新交接状态并收尾”
-- “查看当前交接状态”
+本仓库是一个 Claude Code / Cursor / 其他支持 Skills 的 AI 编程工具的 **Skill**。
 
-这就是它最自然的工作流。
+**直接把链接丢给它们，并说：**
 
----
+​```帮我装一下这个skills：https://github.com/abandon88/agent-handoff​```
 
-## 如果你更喜欢手动跑
+### 初始化项目
 
-虽然首页主打法不是命令行，但它也保留了手动入口。
+在目标仓库根目录对 AI 说：
 
-如果你已经把 `agent-handoff` 安装进自己的 skills 目录里，也可以在安装后的 skill 目录手动运行：
+​```初始化项目交接​```
 
-```bash
-python scripts/handoff.py init <repo-root>
-python scripts/handoff.py resume <repo-root>
-python scripts/handoff.py close-session <repo-root> [update-request.json]
-python scripts/handoff.py validate <repo-root>
-python scripts/handoff.py rebuild <repo-root>
-```
+脚本会自动创建 `.agent-handoff/` 目录，并在根目录的 `AGENTS.md` 中插入入口提醒（不影响原有内容）。
 
-这些命令分别对应初始化、恢复、收尾、校验和重建。
+### 日常使用
 
----
+| 触发语           | 作用                                |
+| ------------- | --------------------------------- |
+| `读取交接状态并继续工作` | 恢复上一次的工作上下文，AI 会告诉你当前目标、进展、下一步和阻塞 |
+| `更新交接状态并收尾`   | 将本轮会话的进展、待办变化、决定等正式写入交接文件         |
+| `查看当前交接状态`    | 快速预览当前阶段、目标和待办数量                  |
 
-## 它不做什么
+> 💡 不需要记命令，自然语言触发即可，skill 内部的脚本会接管一切。
 
-- 不保存整段聊天记录
-- 不替代 Git 或版本控制
-- 不保证模型“永久记忆”
-- 不替你判断所有内容是不是都值得长期保留
+* * *
 
-它解决的是更具体、也更有用的一件事：
+🧱 目录结构一瞥
+---------
 
-**把项目交接状态留在仓库里，让下一次继续工作时有地方可接。**
 
----
 
-## 仓库里有什么
+​```.agent-handoff/
+├── START-HERE.md          # 给 AI 看的入口说明书
+├── HANDOFF-RULES.md       # 你自定义的「何时该记录」规则
+├── STATE.yaml             # 硬核状态卡片（展示层）
+├── CURRENT.md             # 当前局面摘要（展示层）
+├── TASKS.md               # 活跃待办（展示层）
+├── COMPLETED.md           # 已完成历史（展示层）
+├── DECISIONS.md           # 拍板决定及理由（展示层）
+├── SESSION-LOG.md         # 按次追加的会话日志（展示层）
+├── _state/                # ⚠️ 结构化真源（脚本维护，严禁手改）
+│   ├── project.yaml
+│   ├── tasks.yaml
+│   ├── decisions.yaml
+│   └── sessions.jsonl
+├── _tmp/                  # 中转更新单暂存区（自动清理）
+├── archive/               # 长期归档
+└── runtime/               # 跨设备运行副本（自动补齐）
+    └── agent-handoff/
+        ├── requirements.txt
+        ├── RUNTIME-INFO.json
+        └── scripts/​```
 
-- [`dist/agent-handoff`](dist/agent-handoff): 实际发布的 skill 内容
-- [`dist/agent-handoff/SKILL.md`](dist/agent-handoff/SKILL.md): skill 说明
-- [`dist/agent-handoff/scripts/handoff.py`](dist/agent-handoff/scripts/handoff.py): 命令入口
-- [`dist/agent-handoff/schemas/update-request.schema.yaml`](dist/agent-handoff/schemas/update-request.schema.yaml): 更新单结构
-- [`dist/agent-handoff/evals/evals.json`](dist/agent-handoff/evals/evals.json): 回归评估
+* * *
 
----
+📄 许可
+-----
 
-## 一句话总结
-
-如果你不想每次换设备、换线程、隔天继续时，都重新给 AI 补一遍背景，`agent-handoff` 就是在仓库里替你留下那份交接。
+MIT License —— 拿去用，别客气。如果它帮你省下了向 AI 解释背景的半小时，记得给个 Star ⭐。 
