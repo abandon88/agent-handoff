@@ -35,18 +35,17 @@ agent-handoff
 
 ## 🧠 它是怎么做到的
 
-
 一句话解释：**模型写「更新单」，脚本落盘并生成给人看的文件。**
 
-```mermaid
-flowchart LR
-    A[你：“更新交接状态并收尾”] --> B[AI 生成 update-request.yaml<br>纯语义，无编号/时间]
-    B --> C[脚本校验并更新<br>_state/ 结构化真源]
-    C --> D[重新生成展示层<br>CURRENT.md / TASKS.md 等]
-    D --> E[Git commit & push]
-    E --> F[另一台电脑 pull]
-    F --> G[“读取交接状态并继续工作”]
-    G --> H[完美续上]
+​```text
+你："更新交接状态并收尾"
+    ↓
+AI 生成 update-request.yaml (纯语义，不带编号和时间)
+    ↓
+脚本校验 -> 更新 _state/ 真源 -> 重新生成 CURRENT.md / TASKS.md 等展示层
+    ↓
+Git commit & push -> 另一台电脑 pull -> "读取交接状态并继续工作" -> 完美续上
+​```
 
 * * *
 
@@ -128,3 +127,5 @@ flowchart LR
 -----
 
 MIT License —— 拿去用，别客气。如果它帮你省下了向 AI 解释背景的半小时，记得给个 Star ⭐。 
+
+
