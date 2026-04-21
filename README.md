@@ -33,22 +33,20 @@ agent-handoff
 
 * * *
 
-🧠 它是怎么做到的
-----------
+## 🧠 它是怎么做到的
+
 
 一句话解释：**模型写「更新单」，脚本落盘并生成给人看的文件。**
 
-text
-
-你: "更新交接状态并收尾"
-      ↓
-   AI 生成 update-request.yaml（纯语义，不带编号和时间）
-      ↓
-   脚本校验 → 更新 _state/ 真源 → 重新生成 CURRENT.md / TASKS.md 等展示层
-      ↓
-   Git commit & push → 另一台电脑 pull → "读取交接状态并继续工作" → 完美续上
-
-因为真源是结构化的 YAML/JSONL，所以永远不会出现编号冲突、格式漂移、手工误改导致状态损坏的问题。
+```mermaid
+flowchart LR
+    A[你：“更新交接状态并收尾”] --> B[AI 生成 update-request.yaml<br>纯语义，无编号/时间]
+    B --> C[脚本校验并更新<br>_state/ 结构化真源]
+    C --> D[重新生成展示层<br>CURRENT.md / TASKS.md 等]
+    D --> E[Git commit & push]
+    E --> F[另一台电脑 pull]
+    F --> G[“读取交接状态并继续工作”]
+    G --> H[完美续上]
 
 * * *
 
@@ -90,13 +88,27 @@ text
 
 ​```帮我装一下这个skills：https://github.com/abandon88/agent-handoff​```
 
-### 初始化项目
+### 初始化项目（仅需一次）
 
 在目标仓库根目录对 AI 说：
 
 ​```初始化项目交接​```
 
 脚本会自动创建 `.agent-handoff/` 目录，并在根目录的 `AGENTS.md` 中插入入口提醒（不影响原有内容）。
+
+> ⚠️ 请务必将生成的 `.agent-handoff/` 目录连同 `AGENTS.md` 的改动一起 `commit` 并 `push` 到远程仓库，这样另一台电脑才能同步到交接状态。
+
+### 跨设备工作流
+
+1. **结束工作前**（电脑 A）  
+   对 AI 说：`更新交接状态并收尾`  
+   → 脚本更新交接记录  
+   → 正常 `git commit` & `git push`
+
+2. **开始工作前**（电脑 B）  
+   `git pull` 拉取最新代码（包括 `.agent-handoff/` 的更新）  
+   对 AI 说：`读取交接状态并继续工作`  
+   → AI 自动读取状态，告诉你当前目标、进展、下一步和阻塞，然后直接干活。
 
 ### 日常使用
 
@@ -108,7 +120,7 @@ text
 
 > 💡 不需要记命令，自然语言触发即可，skill 内部的脚本会接管一切。
 
-*  
+
 
 * * *
 
