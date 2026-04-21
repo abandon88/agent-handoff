@@ -37,7 +37,6 @@ agent-handoff
 
 一句话解释：**模型写「更新单」，脚本落盘并生成给人看的文件。**
 
-​```text
 你："更新交接状态并收尾"
     ↓
 AI 生成 update-request.yaml (纯语义，不带编号和时间)
@@ -45,7 +44,7 @@ AI 生成 update-request.yaml (纯语义，不带编号和时间)
 脚本校验 -> 更新 _state/ 真源 -> 重新生成 CURRENT.md / TASKS.md 等展示层
     ↓
 Git commit & push -> 另一台电脑 pull -> "读取交接状态并继续工作" -> 完美续上
-​```
+
 
 * * *
 
@@ -85,7 +84,7 @@ Git commit & push -> 另一台电脑 pull -> "读取交接状态并继续工作"
 
 **直接把链接丢给它们，并说：**
 
-​```帮我装一下这个skills：https://github.com/abandon88/agent-handoff​```
+    帮我装一下这个skills：https://github.com/abandon88/agent-handoff​
 
 ### 初始化项目（仅需一次）
 
@@ -127,5 +126,3 @@ Git commit & push -> 另一台电脑 pull -> "读取交接状态并继续工作"
 -----
 
 MIT License —— 拿去用，别客气。如果它帮你省下了向 AI 解释背景的半小时，记得给个 Star ⭐。 
-
-
