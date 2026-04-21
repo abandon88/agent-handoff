@@ -108,34 +108,7 @@ text
 
 > 💡 不需要记命令，自然语言触发即可，skill 内部的脚本会接管一切。
 
-* * *
-
-🧱 目录结构一瞥
----------
-
-
-
-​```.agent-handoff/
-├── START-HERE.md          # 给 AI 看的入口说明书
-├── HANDOFF-RULES.md       # 你自定义的「何时该记录」规则
-├── STATE.yaml             # 硬核状态卡片（展示层）
-├── CURRENT.md             # 当前局面摘要（展示层）
-├── TASKS.md               # 活跃待办（展示层）
-├── COMPLETED.md           # 已完成历史（展示层）
-├── DECISIONS.md           # 拍板决定及理由（展示层）
-├── SESSION-LOG.md         # 按次追加的会话日志（展示层）
-├── _state/                # ⚠️ 结构化真源（脚本维护，严禁手改）
-│   ├── project.yaml
-│   ├── tasks.yaml
-│   ├── decisions.yaml
-│   └── sessions.jsonl
-├── _tmp/                  # 中转更新单暂存区（自动清理）
-├── archive/               # 长期归档
-└── runtime/               # 跨设备运行副本（自动补齐）
-    └── agent-handoff/
-        ├── requirements.txt
-        ├── RUNTIME-INFO.json
-        └── scripts/​```
+*  
 
 * * *
 
