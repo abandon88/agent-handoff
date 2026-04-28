@@ -12,6 +12,14 @@ agent-handoff
 
 * * *
 
+## 社区支持
+
+学AI，上L站
+
+https://linux.do/
+
+*** 
+
 🔥为什么你需要这个
 ---------
 
@@ -36,7 +44,6 @@ agent-handoff
 ## 🧠 它是怎么做到的
 
 一句话解释：**模型写「更新单」，脚本落盘并生成给人看的文件。**
-
     你："更新交接状态并收尾"    
             ↓
     AI 生成 update-request.yaml (纯语义，不带编号和时间) 
@@ -84,7 +91,6 @@ agent-handoff
 本仓库是一个 Claude Code / Cursor / 其他支持 Skills 的 AI 编程工具的 **Skill**。
 
 **直接把链接丢给它们，并说：**
-
     帮我装一下这个skills：https://github.com/abandon88/agent-handoff​
 
 ### 初始化项目（仅需一次）
