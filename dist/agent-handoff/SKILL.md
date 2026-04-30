@@ -22,6 +22,7 @@ compatibility: 需要 Python 3.8+ 与 PyYAML 6.0.2，并且对目标仓库内文
 - 如果仓库内运行副本还不存在，或看起来不完整，先用全局安装目录里的 `scripts/handoff.py` 补齐，再继续后续命令。
 - 仓库内运行副本只保留运行必需文件，不保留第二份 `SKILL.md`。
 - 不要直接手改生成出来的交接 Markdown 文件。
+- `SESSION-LOG.md` 用于恢复上下文，`DAILY-LOG.md` 用于给人按日期复盘工作量；两者都由脚本从 `_state/` 生成。
 - 收尾更新单默认写到 `.agent-handoff/_tmp/close-session-YYYYMMDD-HHMMSS.json`。
 - 会跨会话延续的事项，应该进入正式待办。
 - 改变规则、结构、流程边界的重要事项，即使本轮做完，也可以通过 `tasks_to_add_and_complete` 直接记入已完成事项。

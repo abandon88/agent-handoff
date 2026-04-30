@@ -21,7 +21,8 @@ START_HERE = """# 交接入口
 3. TASKS.md
 4. DECISIONS.md
 5. SESSION-LOG.md
-6. HANDOFF-RULES.md
+6. DAILY-LOG.md
+7. HANDOFF-RULES.md
 
 ## 常用触发语
 - 初始化项目交接
@@ -187,6 +188,7 @@ def init_repository(root: Path) -> None:
     (handoff_dir / "COMPLETED.md").write_text("# 已完成事项\n", encoding="utf-8")
     (handoff_dir / "DECISIONS.md").write_text("# 已定决策\n", encoding="utf-8")
     (handoff_dir / "SESSION-LOG.md").write_text("# 会话记录\n", encoding="utf-8")
+    (handoff_dir / "DAILY-LOG.md").write_text("# 每日工作日志\n\n- 无\n", encoding="utf-8")
     (handoff_dir / "STATE.yaml").write_text(
         yaml.safe_dump(
             {
@@ -363,6 +365,40 @@ def _render_sessions_md(sessions: list[dict[str, Any]]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def _session_date(session: dict[str, Any]) -> str:
+    stamp = session.get("ended_at") or session.get("started_at") or ""
+    if not stamp:
+        return "未知日期"
+    return datetime.fromisoformat(stamp).date().isoformat()
+
+
+def _session_sort_stamp(session: dict[str, Any]) -> str:
+    return session.get("ended_at") or session.get("started_at") or ""
+
+
+def _render_daily_log_md(sessions: list[dict[str, Any]]) -> str:
+    lines = ["# 每日工作日志", ""]
+    if not sessions:
+        lines.append("- 无")
+        return "\n".join(lines) + "\n"
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for session in sessions:
+        grouped.setdefault(_session_date(session), []).append(session)
+
+    for day in sorted(grouped.keys(), reverse=True):
+        lines.extend(["---", "", f"## {day}", ""])
+        for session in sorted(grouped[day], key=_session_sort_stamp):
+            progress_lines = [f"- {item}" for item in session.get("progress", [])] or ["- 无"]
+            risk_items = session.get("risks", [])
+            lines.extend([f"### {session['focus']}", *progress_lines])
+            if risk_items:
+                lines.extend(["", "#### 风险与备注", *[f"- {item}" for item in risk_items]])
+            lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def rebuild_views(root: Path) -> None:
     root = Path(root)
     handoff_dir = root / ".agent-handoff"
@@ -374,6 +410,7 @@ def rebuild_views(root: Path) -> None:
     (handoff_dir / "COMPLETED.md").write_text(_render_completed_md(tasks), encoding="utf-8")
     (handoff_dir / "DECISIONS.md").write_text(_render_decisions_md(decisions), encoding="utf-8")
     (handoff_dir / "SESSION-LOG.md").write_text(_render_sessions_md(sessions), encoding="utf-8")
+    (handoff_dir / "DAILY-LOG.md").write_text(_render_daily_log_md(sessions), encoding="utf-8")
 
 
 def _save_truth(
@@ -571,6 +608,7 @@ def validate_repository(root: Path) -> list[str]:
         handoff_dir / "COMPLETED.md",
         handoff_dir / "DECISIONS.md",
         handoff_dir / "SESSION-LOG.md",
+        handoff_dir / "DAILY-LOG.md",
     ]
     for path in required_directories:
         if not path.is_dir():
